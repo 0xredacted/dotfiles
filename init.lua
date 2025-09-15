@@ -58,6 +58,12 @@ require("lazy").setup({
   checker = { enabled = false },
 })
 
+require("nvim-treesitter.configs").setup {
+	highlight = {
+		enable = true,
+	},
+}
+
 require('mini.pick').setup()
 
 map('n', '<leader>ff', ":Pick files<CR>")
@@ -68,22 +74,22 @@ map('n', '<leader>fb', ":Pick buffers<CR>")
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md
 servers = {"gopls", "rust_analyzer", "clangd"}
 
-vim.lsp.enable(servers)
+vim.api.nvim_create_autocmd('LspAttach', {
+	group = vim.api.nvim_create_augroup('my.lsp', {}),
+	callback = function(args)
+		local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
+		if client:supports_method('textDocument/completion') then
+			local chars = {}; for i = 32, 126 do table.insert(chars, string.char(i)) end
+			client.server_capabilities.completionProvider.triggerCharacters = chars
+			vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
+		end
+	end,
+})
 
-for _, language_server in pairs(servers)
-do
-	require("lspconfig")[language_server].setup({
-		on_attach = function(client, bufnr)
-				vim.lsp.completion.enable(true, client.id, bufnr, {
-			autotrigger = true,
-			convert = function(item)
-						return { abbr = item.label:gsub("%b()", "") }
-			end,
-				})
-				vim.keymap.set("i", "<C-space>", vim.lsp.completion.get, { desc = "trigger autocompletion" })
-			end
-	})
-end
+vim.lsp.enable(servers)
+-- quality of life feature so nothing is selected by default when auto completing
+vim.cmd [[set completeopt+=menuone,noselect,popup]]
+map('i', '<C-e>', function() vim.lsp.completion.get() end)
 
 map('n', 'K', vim.lsp.buf.hover, { desc = 'Show hover' })
 map('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to definition' })
