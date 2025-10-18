@@ -1,0 +1,4 @@
+[font]
+normal = { family = "IBMPlexMono", style = "Regular" }
+bold = { family = "IBMPlexMono", style = "Bold" }
+size = 12
