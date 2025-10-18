@@ -1,12 +1,15 @@
 vim.cmd([[set mouse=a]])
 vim.cmd([[set noswapfile]])
 vim.opt.winborder = "rounded"
-vim.opt.tabstop = 2
 vim.opt.wrap = false
 vim.opt.cursorcolumn = false
 vim.opt.ignorecase = true
+-- Configure tab
+vim.opt.expandtab = true
+vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.smartindent = true
+-- end configure tabs
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.termguicolors = true
@@ -79,6 +82,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 	callback = function(args)
 		local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
 		if client:supports_method('textDocument/completion') then
+			-- Optional: trigger autocompletion on EVERY keypress. May be slow!
 			local chars = {}; for i = 32, 126 do table.insert(chars, string.char(i)) end
 			client.server_capabilities.completionProvider.triggerCharacters = chars
 			vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
